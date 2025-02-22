@@ -2,11 +2,10 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract CHEFStake is AccessControl, ReentrancyGuard {
+contract CHEFStake is AccessControl {
     using SafeERC20 for IERC20;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -36,11 +35,11 @@ contract CHEFStake is AccessControl, ReentrancyGuard {
         // 用户质押的代币数量
         uint256 stAmount;
         // 已分配的 Chef 数量
-        uint256 finishedChef;
+        uint256 finishedCHEF;
         // 待领取的 Chef 数量
-        uint256 pendingChef;
+        uint256 pendingCHEF;
         // 解质押请求列表，每个请求包含解质押数量和解锁区块。
-        UnstakeRequest[] requests;
+        UnstakeRequest[] unstakeRequests;
     }
 
     IERC20 public immutable chefToken;
@@ -66,17 +65,14 @@ contract CHEFStake is AccessControl, ReentrancyGuard {
     event PoolUpdated(uint256 indexed pid);
 
     constructor(IERC20 _chefToken) {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(ADMIN_ROLE, msg.sender);
-        _setupRole(UPGRADER_ROLE, msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(ADMIN_ROLE, msg.sender);
+        _grantRole(UPGRADER_ROLE, msg.sender);
         chefToken = _chefToken;
     }
 
     // 质押功能
-    function deposit(
-        uint256 pid,
-        uint256 amount
-    ) external payable nonReentrant {
+    function deposit(uint256 pid, uint256 amount) external payable {
         require(!isStakePaused, "Deposit paused");
         Pool storage pool = pools[pid];
         require(amount >= pool.minDepositAmount, "Below minimum");
@@ -100,7 +96,7 @@ contract CHEFStake is AccessControl, ReentrancyGuard {
     }
 
     // 请求解质押
-    function requestUnstake(uint256 pid, uint256 amount) external nonReentrant {
+    function requestUnstake(uint256 pid, uint256 amount) external {
         require(!isUnstakePaused, "Unstake paused");
         UserInfo storage user = userInfo[pid][msg.sender];
         require(user.stAmount >= amount, "Insufficient balance");
@@ -124,7 +120,7 @@ contract CHEFStake is AccessControl, ReentrancyGuard {
     }
 
     // 领取奖励
-    function claim(uint256 pid) external nonReentrant {
+    function claim(uint256 pid) external {
         require(!isClaimPaused, "Claim paused");
         UserInfo storage user = userInfo[pid][msg.sender];
         updatePool(pid);
@@ -140,7 +136,7 @@ contract CHEFStake is AccessControl, ReentrancyGuard {
     }
 
     // 提取已解锁资金
-    function withdraw(uint256 pid) external nonReentrant {
+    function withdraw(uint256 pid) external {
         UserInfo storage user = userInfo[pid][msg.sender];
         uint256 totalAmount;
 
