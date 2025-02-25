@@ -70,7 +70,10 @@ contract CHEFStake is AccessControl {
         _grantRole(UPGRADER_ROLE, msg.sender);
         chefToken = _chefToken;
     }
-
+    // 查询质押数量
+    function getStakeAmount(uint256 pid, address user) external view returns (uint256) {
+        return userInfo[pid][user].stAmount;
+    }
     // 质押功能
     function deposit(uint256 pid, uint256 amount) external payable {
         require(!isStakePaused, "Deposit paused");
