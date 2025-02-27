@@ -1,5 +1,4 @@
-declare global {
-  interface window {
-    ethereum: window.ethereum;
-  }
+
+declare interface Window {
+  ethereum: Window.ethereum
 }
