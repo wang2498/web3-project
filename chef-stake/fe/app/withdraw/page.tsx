@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Box, TextField, Typography, Button, Snackbar } from '@mui/material';
 import useWeb3 from '@/hooks/useWeb3';
-import { address0, formatUnits, parseUnits, Pid } from '@/utils';
+import { Pid } from '@/utils';
 import { ethers } from 'ethers';
 
 type UserStakeData = {
@@ -28,6 +28,8 @@ export default function Withdraw() {
     if (!stakeContract.current || !address) return;
     const stakeAmount = await stakeContract.current?.getStakeAmount(Pid, address);
     const [withdrawAmount, pendingAmount] = await stakeContract.current?.getWithdrawAmount(Pid);
+    console.log(ethers.formatEther(withdrawAmount as bigint), 'withdrawAmount');
+    console.log(ethers.formatEther(pendingAmount as bigint), 'pendingAmount');
     setUserData({
       stakeAmount: Number(ethers.formatEther(stakeAmount as bigint)),
       withdrawAmount: Number(ethers.formatEther(withdrawAmount as bigint)),
@@ -36,26 +38,41 @@ export default function Withdraw() {
   }, [stakeContract, address, isConnected]);
   const handleWithdraw = async () => {
     if (!stakeContract || !address) return;
+    try {
+      setLoading(true);
+      const tx = await stakeContract.current?.withdraw(Pid);
+      await tx.wait();
+      setMessageOpen(true);
+      setWithdrawReadyAmount('');
+    } catch (err: any) {
+      console.log(err, 'err');
+    } finally {
+      setLoading(false);
+    }
   };
   const handleUnStake = async () => {
     if (!stakeContract || !address) return;
     try {
       setLoading(true);
-      const tx = await stakeContract.deposit(Pid, unStakeAmount);
+      const tx = await stakeContract.current?.requestUnstake(Pid, ethers.parseEther(unStakeAmount));
       await tx.wait();
+      console.log(tx, 'tx');
       setMessageOpen(true);
       setUnStakeAmount('');
+      setLoading(false);
       getUserData();
     } catch (err: any) {
       console.log(err, 'err');
+    } finally {
       setLoading(false);
     }
   };
-  const setCHEFPerBlock = async () => {
+  const handleClaim = async () => {
     if (!stakeContract || !address) return;
-    const tx = await stakeContract.current?.setCHEFPerBlock(ethers.parseEther('10'));
+    const tx = await stakeContract.current?.claim(Pid);
     await tx.wait();
-    console.log(tx, 'tx-----');
+    setMessageOpen(true);
+    getUserData();
   };
   const handleCloseMessage = () => {
     setMessageOpen(false);
@@ -85,13 +102,13 @@ export default function Withdraw() {
           <Box className="text-center">
             <Typography>Available To Withdraw</Typography>
             <Typography variant="h6" className="text-center">
-              {userData.withdrawChefAmount} ETH
+              {userData.withdrawAmount} ETH
             </Typography>
           </Box>
           <Box>
             <Typography>Pending To Withdraw</Typography>
             <Typography variant="h6" className="text-center">
-              {userData.pendingChefAmount} ETH
+              {userData.pendingAmount} Chef
             </Typography>
           </Box>
         </Box>
@@ -105,7 +122,7 @@ export default function Withdraw() {
         <Button loading={loading} className="mt-4 font-bold" variant="contained" onClick={handleUnStake}>
           UNSTAKE
         </Button>
-        <Typography className="mt-4 text-neutral-500">Ready Amount: {userData.withdrawChefAmount} ETH</Typography>
+        <Typography className="mt-4 text-neutral-500">Ready Amount: {userData.withdrawAmount} ETH</Typography>
         <TextField
           className="mt-4"
           label="Amount"
@@ -121,15 +138,15 @@ export default function Withdraw() {
         >
           WITHDRAW
         </Button>
-        <Button className="mt-4 font-bold" variant="contained" onClick={setCHEFPerBlock}>
-          setCHEFPerBlock
+        <Button className="mt-4 font-bold" variant="contained" onClick={handleClaim}>
+          CLAIM
         </Button>
       </Box>
       <Snackbar
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={messageOpen}
         onClose={handleCloseMessage}
-        message="质押成功"
+        message="解质押成功"
       />
     </Box>
   );
