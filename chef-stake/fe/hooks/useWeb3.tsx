@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, useCallback, createContext, useContext } from 'react';
-import { ethers, BigNumberish, parseUnits } from 'ethers';
+import { ethers, BigNumberish } from 'ethers';
 import { stakeAbi } from '@/assets/stake';
-import { address0, contractAddress, Pid } from '@/utils';
+import { contractAddress } from '@/utils';
 
-const Web3Context = createContext();
+const Web3Context = createContext({});
 
 export const Web3Provider = ({ children }: { children: React.ReactNode }) => {
   const [address, setAddress] = useState<string>('');

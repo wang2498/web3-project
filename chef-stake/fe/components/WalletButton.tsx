@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { Box, Button, IconButton, Typography, Dialog, DialogTitle, DialogContent, Text } from '@mui/material';
+import { Box, Button, IconButton, Typography, Dialog, DialogTitle, DialogContent } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { ethers } from 'ethers';
 import useWeb3 from '@/hooks/useWeb3';
@@ -22,7 +22,7 @@ function WalletButton() {
   const [walletOpen, setWalletOpen] = useState(false);
   const [connectOpen, setConnectOpen] = useState(false);
   const [randomAvatar, setRandomAvatar] = useState('');
-  const { wallet, provider, signer } = useWeb3();
+  const { wallet } = useWeb3();
   const {
     address,
     balance,

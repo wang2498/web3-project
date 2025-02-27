@@ -17,7 +17,7 @@ const initData: UserStakeData = {
 };
 export default function Withdraw() {
   const { wallet, stakeContract } = useWeb3();
-  const { address, isConnected } = wallet;
+  const { address } = wallet;
   const [messageOpen, setMessageOpen] = useState(false);
 
   const [unStakeAmount, setUnStakeAmount] = useState('');
@@ -35,7 +35,7 @@ export default function Withdraw() {
       withdrawAmount: Number(ethers.formatEther(withdrawAmount as bigint)),
       pendingAmount: Number(ethers.formatEther(pendingAmount as bigint)),
     });
-  }, [stakeContract, address, isConnected]);
+  }, [stakeContract, address]);
   const handleWithdraw = async () => {
     if (!stakeContract || !address) return;
     try {
@@ -44,7 +44,7 @@ export default function Withdraw() {
       await tx.wait();
       setMessageOpen(true);
       setWithdrawReadyAmount('');
-    } catch (err: any) {
+    } catch (err) {
       console.log(err, 'err');
     } finally {
       setLoading(false);
@@ -61,7 +61,7 @@ export default function Withdraw() {
       setUnStakeAmount('');
       setLoading(false);
       getUserData();
-    } catch (err: any) {
+    } catch (err) {
       console.log(err, 'err');
     } finally {
       setLoading(false);
