@@ -1,9 +1,5 @@
-import Image from "next/image";
-
-export default function Home() {
-  return (
-   <div>
-    123123
-   </div>
-  );
+import Home from './home/page'
+import './globals.css'
+export default function Page() {
+  return <Home />
 }

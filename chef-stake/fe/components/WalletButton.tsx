@@ -23,7 +23,17 @@ function WalletButton() {
   const [connectOpen, setConnectOpen] = useState(false);
   const [randomAvatar, setRandomAvatar] = useState('');
   const { wallet, provider, signer } = useWeb3();
-  const { address, balance, isConnected, chainId, chainName, connect, disconnect, getCurrentAccountInfo } = wallet;
+  const {
+    address,
+    balance,
+    isConnected,
+    chainId,
+    chainName,
+    connect,
+    disconnect,
+    getCurrentAccountInfo,
+    initContract,
+  } = wallet;
   const simpleAddress = useMemo(() => (address ? address?.slice(0, 6) + '...' + address?.slice(-4) : ''), [address]);
   const balanceFormatted = useMemo(() => (balance ? ethers.formatEther(balance as BigNumberish) : '0'), [balance]);
   // const {} = useWallet()
@@ -46,6 +56,7 @@ function WalletButton() {
         await connect();
         setConnectOpen(false);
         getCurrentAccountInfo();
+        initContract();
       }
     } catch (err) {
       console.log(err, 'err----');
