@@ -70,7 +70,13 @@ contract CHEFStake is AccessControl {
         _grantRole(UPGRADER_ROLE, msg.sender);
         chefToken = _chefToken;
     }
-
+    // 查询质押数量
+    function getStakeAmount(
+        uint256 pid,
+        address user
+    ) external view returns (uint256) {
+        return userInfo[pid][user].stAmount;
+    }
     // 质押功能
     function deposit(uint256 pid, uint256 amount) external payable {
         require(!isStakePaused, "Deposit paused");
@@ -134,7 +140,25 @@ contract CHEFStake is AccessControl {
 
         emit Claim(msg.sender, pid, amount);
     }
+    // 查询解质押数量
+    function getWithdrawAmount(
+        uint256 pid
+    )
+        public
+        view
+        returns (uint256 requestAmount, uint256 pendingWithdrawAmount)
+    {
+        UserInfo storage user_ = userInfo[pid][msg.sender];
 
+        for (uint256 i = 0; i < user_.unstakeRequests.length; i++) {
+            if (user_.unstakeRequests[i].unlockBlock <= block.number) {
+                pendingWithdrawAmount =
+                    pendingWithdrawAmount +
+                    user_.unstakeRequests[i].amount;
+            }
+            requestAmount = requestAmount + user_.unstakeRequests[i].amount;
+        }
+    }
     // 提取已解锁资金
     function withdraw(uint256 pid) external {
         UserInfo storage user = userInfo[pid][msg.sender];
